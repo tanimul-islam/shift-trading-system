@@ -124,3 +124,12 @@ E:\shift-trading-system\apps\api\ShiftTrade.Api\obj\Debug\net10.0\refint\shiftTr
 E:\shift-trading-system\apps\api\ShiftTrade.Api\obj\Debug\net10.0\shiftTrade.api.pdb
 E:\shift-trading-system\apps\api\ShiftTrade.Api\obj\Debug\net10.0\shiftTrade.api.genruntimeconfig.cache
 E:\shift-trading-system\apps\api\ShiftTrade.Api\obj\Debug\net10.0\ref\shiftTrade.api.dll
+E:\shift-trading-system\apps\api\ShiftTrade.Api\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+E:\shift-trading-system\apps\api\ShiftTrade.Api\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll
+E:\shift-trading-system\apps\api\ShiftTrade.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+E:\shift-trading-system\apps\api\ShiftTrade.Api\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+E:\shift-trading-system\apps\api\ShiftTrade.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+E:\shift-trading-system\apps\api\ShiftTrade.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+E:\shift-trading-system\apps\api\ShiftTrade.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+E:\shift-trading-system\apps\api\ShiftTrade.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+E:\shift-trading-system\apps\api\ShiftTrade.Api\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll

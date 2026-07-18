@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using shiftTrade.Api.Data;
 using shiftTrade.api.models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 
 
@@ -20,6 +22,38 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+
+var jwtKey = builder.Configuration["Jwt:Key"]
+?? throw new InvalidOperationException("JWT sign in key was not found");
+
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+?? throw new InvalidOperationException("JWT Issuer Not Found");
+
+var jwtAudience = builder.Configuration["Jwt:Audience"]
+?? throw new InvalidOperationException("JWT Audience Not Found");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme =JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters=new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+ValidIssuer = jwtIssuer,
+ValidateAudience = true,
+ValidAudience = jwtAudience,
+ValidateLifetime = true,
+ValidateIssuerSigningKey = true,
+IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtKey)),
+    ClockSkew = TimeSpan.Zero
+
+    };
+});
+
+builder.Services.AddAuthorization();
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -35,7 +69,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

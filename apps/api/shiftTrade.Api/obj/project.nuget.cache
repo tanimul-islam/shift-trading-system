@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "wzg8r3kSYaw=",
+  "dgSpecHash": "I9G0dZjY8Dk=",
   "success": true,
-  "projectFilePath": "E:\\shift-trading-system\\apps\\api\\shiftTrade.Api\\shiftTrade.api.csproj",
+  "projectFilePath": "E:\\shift-trading-system\\apps\\api\\ShiftTrade.Api\\shiftTrade.api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\tanim\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\tanim\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\10.0.10\\microsoft.aspnetcore.authentication.jwtbearer.10.0.10.nupkg.sha512",
