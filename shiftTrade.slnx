@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/apps/" />
+  <Folder Name="/apps/api/" />
+  <Folder Name="/apps/api/shiftTrade.Api/">
+    <Project Path="apps/api/shiftTrade.Api/shiftTrade.api.csproj" />
+  </Folder>
+</Solution>

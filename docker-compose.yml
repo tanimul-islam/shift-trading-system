@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: shifttrade-postgres
+    environment:
+      POSTGRES_DB: shifttrade
+      POSTGRES_USER: shifttrade_user
+      POSTGRES_PASSWORD: dihan1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
