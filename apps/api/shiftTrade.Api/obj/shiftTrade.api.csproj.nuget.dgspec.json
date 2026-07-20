@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\shift-trading-system\\apps\\api\\ShiftTrade.Api\\shiftTrade.api.csproj": {}
+    "E:\\shift-trading-system\\apps\\api\\shiftTrade.Api\\shiftTrade.api.csproj": {}
   },
   "projects": {
-    "E:\\shift-trading-system\\apps\\api\\ShiftTrade.Api\\shiftTrade.api.csproj": {
+    "E:\\shift-trading-system\\apps\\api\\shiftTrade.Api\\shiftTrade.api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\shift-trading-system\\apps\\api\\ShiftTrade.Api\\shiftTrade.api.csproj",
+        "projectUniqueName": "E:\\shift-trading-system\\apps\\api\\shiftTrade.Api\\shiftTrade.api.csproj",
         "projectName": "shiftTrade.api",
-        "projectPath": "E:\\shift-trading-system\\apps\\api\\ShiftTrade.Api\\shiftTrade.api.csproj",
+        "projectPath": "E:\\shift-trading-system\\apps\\api\\shiftTrade.Api\\shiftTrade.api.csproj",
         "packagesPath": "C:\\Users\\tanim\\.nuget\\packages\\",
-        "outputPath": "E:\\shift-trading-system\\apps\\api\\ShiftTrade.Api\\obj\\",
+        "outputPath": "E:\\shift-trading-system\\apps\\api\\shiftTrade.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Visual studio sdk\\NuGetPackages"

@@ -4,10 +4,13 @@ using shiftTrade.api.models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-
+using shiftTrade.Api.Contracts.Auth;
+using System.Text.RegularExpressions;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddValidation();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
 ?? throw new InvalidOperationException("Connection string 'Default Connection' not found." );
@@ -75,3 +78,35 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+app.MapPost("/api/auth/register", async (RegisterRequest request, UserManager<ApplicationUser> userManager) =>
+{
+    var user = new ApplicationUser
+    {
+        UserName = request.EmailAddress,
+        Email = request.EmailAddress,
+        displayName = request.DisplayName
+
+    };
+
+    var result = await userManager.CreateAsync(user,request.Password);
+    if(!result.Succeeded)
+    {
+        var errors = result.Errors
+        .GroupBy(error=>error.Code)
+        .ToDictionary(
+                group => group.Key,
+            group => group.Select(error =>error.Description).ToArray()
+        );
+        return Results.ValidationProblem(errors);
+    }
+
+    return Results.Created($"api/employees/{user.Id}", new
+    {
+        user.Id,
+        user.displayName,
+        user.Email
+    });
+
+}).AllowAnonymous().WithTags("Authentication");
