@@ -3,7 +3,7 @@ namespace shiftTrade.api.models;
 public class Organization
 {
     public Guid Id {get;set;} =  Guid.NewGuid();
-    public string  Naem {get;set;} = string.Empty;
+    public string  Name {get;set;} = string.Empty;
     public DateTime CreatedAtUtc =DateTime.UtcNow;
 
 }
