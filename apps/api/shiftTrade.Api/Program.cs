@@ -4,12 +4,11 @@ using shiftTrade.api.models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using shiftTrade.Api.Contracts.Auth;
-using System.Text.RegularExpressions;
 using shiftTrade.Api.Services.Auth;
-using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Authentication.BearerToken;
 
+
+
+using shiftTrade.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
@@ -85,124 +84,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 
-
-app.MapPost("/api/auth/register", async (RegisterOrganizationRequest request, UserManager<ApplicationUser> userManager, ApplicationDbContext db) =>
-{
-   await using var transaction = await db.Database.BeginTransactionAsync();
-   
-   
-   
-    var user = new ApplicationUser
-    {
-        UserName = request.EmailAddress,
-        Email = request.EmailAddress,
-        displayName = request.DisplayName
-
-    };
-
-    var result = await userManager.CreateAsync(user,request.Password);
-    if(!result.Succeeded)
-    {
-        var errors = result.Errors
-        .GroupBy(error=>error.Code)
-        .ToDictionary(
-                group => group.Key,
-            group => group.Select(error =>error.Description).ToArray()
-        );
-        return Results.ValidationProblem(errors);
-    }
-
-
-    var organization = new Organization
-    {
-        Name =request.OrganizationName
-    };
-
-    var location = new Location
-    {
-        Name = request.LocationName,
-        OrganizationId = organization.Id
-    };
-
-
-    var membership = new OrganizationMembership
-    {
-        userId = user.Id,
-        OrganizationId = organization.Id,
-        Role = "Owner"
-    };
-
-    db.Organizations.Add(organization);
-    db.Locations.Add(location);
-    db.OrganizationMemberships.Add(membership);
-
-    return Results.Created($"api/organizations/{organization.Id}", new
-     {
-        organization.Id,
-        organization.Name,
-        location = new
-        {
-            location.Id,
-            location.Name
-        },
-        owner = new
-        {
-            user.Id,
-            user.displayName,
-            user.Email
-        }
-    });
-
-}).AllowAnonymous().WithTags("Authentication");
-
-//LOGIN AUTH
-
-app.MapPost ("api/auth/login",async (
-    LoginRequest request,
-    UserManager<ApplicationUser> userManager,
-    ApplicationDbContext db,
-    JwtTokenService jwtTokenService
-) =>
-{
-    var user = await userManager.FindByEmailAsync(request.Email);
-
-    if (user is null ||
-        !await userManager.CheckPasswordAsync(user, request.Password))
-    {
-        return Results.Unauthorized();
-    }
-
-    var membership = await db.OrganizationMemberships
-    .AsNoTracking().FirstOrDefaultAsync(membership => membership.userId == user.Id );
-
-    if (membership is null)
-    {
-        return Results.Unauthorized();
-    }
-
-    var accessToken = jwtTokenService.CreateToken(user, membership);
-
-    return Results.Ok(
-        new
-        {
-            accessToken,
-            tokenType ="Bearer",
-            expiresIn = 7200,
-            user = new
-            {
-                user.Id,
-                user.displayName,
-                user.Email
-            },
-            organization = new
-            {
-                membership.OrganizationId,
-                membership.Role
-            }
-        }
-    );
-                                    
-}).AllowAnonymous().WithTags("Authentication");
-
+app.MapAuthEndpoints();
 
 app.Run();

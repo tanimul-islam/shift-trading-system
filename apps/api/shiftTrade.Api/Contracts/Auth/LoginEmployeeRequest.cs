@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace shiftTrade.Api.Contracts.Auth;
 
 
-public sealed class LogInRequest
+public sealed class LoginEmployeeRequest
 {
     [Required]
     [EmailAddress]

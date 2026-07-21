@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("shiftTrade.api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d02d8266178d6a49364cd92b2027d73337bcb76c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c1ed4fe8525710595e1d9fbf2c6d6ae205dd8a30")]
 [assembly: System.Reflection.AssemblyProductAttribute("shiftTrade.api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("shiftTrade.api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
