@@ -8,7 +8,7 @@ public class Shifts
     public Guid LocationId {get;set;}
     public string PostedByUserId{get;set;} = String.Empty;
 
-    public DateTime ScheduleStartUtx {get;set;} 
+    public DateTime ScheduleStartUtc {get;set;} 
     public DateTime ScheduleEndUtc {get;set;}
     public string Staus {get;set;}  ="Open";
     public string? AcceptedByUserId {get;set;} 

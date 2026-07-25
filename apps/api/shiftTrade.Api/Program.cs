@@ -100,5 +100,5 @@ app.MapControllers();
 
 app.MapAuthEndpoints();
 app.MapEmployeeEndpoints();
-
+app.MapShiftEndpoints();
 app.Run();
