@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using shiftTrade.Api.Contracts.Shifts;
 using shiftTrade.Api.Data;
 using shiftTrade.api.models;
+using shiftTrade.Api.Extensions;
 
 namespace shiftTrade.Api.Endpoints;
 
@@ -20,15 +21,10 @@ public static class ShiftEndpoints
             ClaimsPrincipal principal,
             ApplicationDbContext db) =>
         {
-            var organizationIdValue = principal.FindFirst("organization_id")?.Value;
-            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? principal.FindFirst("sub")?.Value;
-
-            if (!Guid.TryParse(organizationIdValue, out var organizationId)
-                || string.IsNullOrWhiteSpace(userId))
-            {
-                return Results.Unauthorized();
-            }
+           if (!principal.TryGetCurrentUser(out var organizationId, out var userId))
+{
+    return Results.Unauthorized();
+}
 
             if (request.ScheduleEndUtc <= request.ScheduleStartUtc)
             {
@@ -114,10 +110,94 @@ var openShifts = await db.Shifts
         })
         .ToListAsync();
 
-    return Results.Ok(openShifts);
+        return Results.Ok(openShifts);
 
+
+    });
+
+    shifts.MapPost("/{shiftId:guid}/accept", async (
+        Guid shiftId,
+        ClaimsPrincipal principal,
+        ApplicationDbContext db
+    )=>
+    {
+        if (!principal.TryGetCurrentUser(out var organizationId, out var userId))
+            {
+                return Results.Unauthorized();
+            }
+
+        await using var transaction = await db.Database.BeginTransactionAsync();
+
+        var shift = await db.Shifts.FirstOrDefaultAsync(shift => 
+        shift.Id == shiftId &&
+        shift.OrganizationId == organizationId);
+
+        if (shift is null)
+        {
+            return Results.NotFound(new
+            {
+                message ="Shift Not Found"
+            });
+
+        }
+
+        if(shift.Status != "Open")
+        {
+            return Results.BadRequest(new
+            {
+                message ="This shift has already been accepted or is no longer open."
+            });
+        }
+
+        if (shift.PostedByUserId == userId)
+        {
+            return Results.BadRequest(
+                new
+                {
+                    message = "You cannot accept you own shift!"
+                }
+            );
+        }
+
+
+        var hoursOwed = (decimal)(shift.ScheduleEndUtc-shift.ScheduleStartUtc).TotalHours;
+
+        shift.Status ="Accepted";
+        shift.AcceptedByUserId = userId;
+        shift.AcceptedAtUtc = DateTime.UtcNow;
+
+        var debt = new HoursDebt
+        {
+            OrganizationId = organizationId,
+            ShiftId = shift.Id,
+            CreditorUserId = shift.PostedByUserId,
+            DebitorUserId = userId,
+            HoursOwed = hoursOwed,
+            Status ="Active"
+        };
+
+        db.HoursDebts.Add(debt);
+
+        await db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+
+        return Results.Ok(new
+        {
+            message="Shift Accepted Successfully",
+            shiftId=shift.Id,
+            shiftStatus = shift.Status,
+            shiftAccepted = shift.AcceptedByUserId,
+            debtId= debt.Id,
+            Creditor = debt.CreditorUserId,
+            debitor = debt.DebitorUserId,
+            owed= debt.HoursOwed,
+            debtStatus = debt.Status
 
         });
+    });
+
+
 
 
         return app;
