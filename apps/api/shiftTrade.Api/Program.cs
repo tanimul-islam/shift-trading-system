@@ -85,5 +85,6 @@ app.MapControllers();
 
 
 app.MapAuthEndpoints();
+app.MapEmployeeEndpoints();
 
 app.Run();

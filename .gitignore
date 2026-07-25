@@ -1,0 +1,43 @@
+# Root ignore rules for the Shift Trading System monorepo
+
+# .NET / ASP.NET Core
+**/bin/
+**/obj/
+**/out/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.dbmdl
+*.jfm
+*.cache
+*.log
+.vs/
+.vscode/
+TestResults/
+packages/
+
+# Entity Framework / local DB artifacts
+*.db
+*.sqlite
+*.sqlite3
+
+# Node.js / Next.js
+node_modules/
+.next/
+coverage/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+
+# Docker local overrides
+docker-compose.override.yml
