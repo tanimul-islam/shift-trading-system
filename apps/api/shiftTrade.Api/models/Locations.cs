@@ -1,4 +1,3 @@
-using shiftTrade.api.models;
 
 namespace shiftTrade.api.models;
 

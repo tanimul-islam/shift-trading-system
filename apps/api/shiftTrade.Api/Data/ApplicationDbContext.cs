@@ -17,6 +17,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
     public DbSet<Shifts> Shifts => Set<Shifts>();
+    public DbSet<HoursDebt> HoursDebts => Set<HoursDebt>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -49,6 +50,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(membership => membership.userId)
             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+
+        builder.Entity<HoursDebt>(entity =>
+        {
+            entity.HasIndex(debt => debt.ShiftId).IsUnique();
+
+            entity.Property(debt =>debt.HoursOwed).HasPrecision(5,2);
         });
     }
 

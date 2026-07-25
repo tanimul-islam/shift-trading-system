@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using shiftTrade.Api.Data;
@@ -11,9 +12,11 @@ using shiftTrade.Api.Data;
 namespace shiftTrade.api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260725142601_RenameStatus")]
+    partial class RenameStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -220,45 +223,6 @@ namespace shiftTrade.api.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("shiftTrade.api.models.HoursDebt", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreateAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreditorUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("DebitorUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("HoursOwed")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("numeric(5,2)");
-
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ShiftId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShiftId")
-                        .IsUnique();
-
-                    b.ToTable("HoursDebts");
                 });
 
             modelBuilder.Entity("shiftTrade.api.models.Location", b =>
