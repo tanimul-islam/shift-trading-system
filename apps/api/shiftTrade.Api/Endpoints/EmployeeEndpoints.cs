@@ -82,6 +82,46 @@ public static class EmployeeEndpoints
                     membership.Role
             });
         });
-        return app;
+
+    employees.MapGet("/", async (
+        ClaimsPrincipal principal,
+        UserManager<ApplicationUser> userManager,
+        ApplicationDbContext db) =>
+    {
+        var organizationIdValue = principal.FindFirst("organization_id")?.Value;
+        var organizationRole = principal.FindFirst("organization_role")?.Value;
+
+        if (!string.Equals(
+            organizationRole,
+            "Owner",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.Forbid();
+        }
+
+        if (!Guid.TryParse(organizationIdValue, out var organizationId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var employeeList = await db.OrganizationMemberships
+            .Where(membership => membership.OrganizationId == organizationId)
+            .Join(
+                userManager.Users,
+                membership => membership.userId,
+                user => user.Id,
+                (membership, user) => new
+                {
+                    user.Id,
+                    user.displayName,
+                    user.Email,
+                    membership.Role
+                })
+            .OrderBy(employee => employee.displayName)
+            .ToListAsync();
+
+        return Results.Ok(employeeList);
+        });
+    return app;
     }
 }
