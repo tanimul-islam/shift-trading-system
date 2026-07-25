@@ -16,6 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Location> Locations => Set<Location>();
 
     public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
+    public DbSet<Shifts> Shifts => Set<Shifts>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
