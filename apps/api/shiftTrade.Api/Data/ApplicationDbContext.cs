@@ -18,7 +18,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
     public DbSet<Shifts> Shifts => Set<Shifts>();
     public DbSet<HoursDebt> HoursDebts => Set<HoursDebt>();
-
+    public DbSet<DebtSettlement> DebtSettlements => Set<DebtSettlement>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -58,6 +58,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(debt => debt.ShiftId).IsUnique();
 
             entity.Property(debt =>debt.HoursOwed).HasPrecision(5,2);
+
+             entity.Property(debt => debt.RemainingHours)
+            .HasPrecision(5, 2);
+        });
+
+        builder.Entity<DebtSettlement>(entity =>
+        {
+            entity.Property(settlement => settlement.HoursApplied)
+                .HasPrecision(5, 2);
         });
     }
 

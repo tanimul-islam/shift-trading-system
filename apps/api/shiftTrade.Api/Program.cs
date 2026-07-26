@@ -96,7 +96,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
+app.MapDebtEndpoints();
 
 app.MapAuthEndpoints();
 app.MapEmployeeEndpoints();

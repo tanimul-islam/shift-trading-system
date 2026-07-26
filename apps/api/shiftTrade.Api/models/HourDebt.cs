@@ -9,6 +9,7 @@ public class HoursDebt
     public String CreditorUserId {get;set;}  = String.Empty;
     public String DebitorUserId {get;set;}  = String.Empty;
     public decimal HoursOwed {get;set;} 
+    public decimal RemainingHours { get; set; }
     public string Status {get;set;}  = "Active";
     public DateTime CreateAtUtc {get;set;}  = DateTime.UtcNow;
 }
