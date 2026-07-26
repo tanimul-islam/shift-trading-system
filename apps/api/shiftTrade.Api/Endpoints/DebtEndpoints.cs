@@ -36,6 +36,7 @@ public static class DebtEndpoints
                     debt.CreditorUserId,
                     debt.DebitorUserId,
                     debt.HoursOwed,
+                    debt.RemainingHours,
                     debt.Status,
                     debt.CreateAtUtc
                 })
@@ -43,11 +44,11 @@ public static class DebtEndpoints
 
                 var hoursOwedToYou = myDebts
                 .Where(debt => debt.CreditorUserId == userId)
-                .Sum(debt=> debt.HoursOwed);
+                .Sum(debt=> debt.RemainingHours);
 
                 var HoursYouOwe = myDebts
                 .Where(debt => debt.DebitorUserId == userId)
-                .Sum(debt=> debt.HoursOwed);
+                .Sum(debt=> debt.RemainingHours);
 
                 return Results.Ok(new
                 {
