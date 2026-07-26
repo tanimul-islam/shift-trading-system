@@ -160,23 +160,67 @@ var openShifts = await db.Shifts
         }
 
 
-        var hoursOwed = (decimal)(shift.ScheduleEndUtc-shift.ScheduleStartUtc).TotalHours;
+        var hoursOwed = decimal.Round((decimal)(shift.ScheduleEndUtc-shift.ScheduleStartUtc).TotalHours,2);
 
         shift.Status ="Accepted";
         shift.AcceptedByUserId = userId;
         shift.AcceptedAtUtc = DateTime.UtcNow;
 
-        var debt = new HoursDebt
+        var newDebt = new HoursDebt
         {
             OrganizationId = organizationId,
             ShiftId = shift.Id,
             CreditorUserId = shift.PostedByUserId,
             DebitorUserId = userId,
             HoursOwed = hoursOwed,
+            RemainingHours = hoursOwed,
             Status ="Active"
         };
 
-        db.HoursDebts.Add(debt);
+        db.HoursDebts.Add(newDebt);
+
+         // Find older debts in the opposite direction.
+         var debtsToRepay = await db.HoursDebts
+          .Where(debt =>
+            debt.OrganizationId == organizationId &&
+            debt.Status == "Active" &&
+            debt.CreditorUserId == userId &&
+            debt.DebitorUserId == shift.PostedByUserId)
+        .OrderBy(debt => debt.CreateAtUtc)
+        .ToListAsync();
+
+foreach (var oldDebt in debtsToRepay)
+        {
+            if(newDebt.RemainingHours <= 0)
+            {
+                break;
+            }
+
+            var hoursApplied =Math.Min(newDebt.RemainingHours,oldDebt.RemainingHours);
+
+            oldDebt.RemainingHours-= hoursApplied;
+            newDebt.RemainingHours -= hoursApplied;
+
+
+            if(oldDebt.RemainingHours == 0)
+            {
+                oldDebt.Status= "Settled";
+            }
+
+            db.DebtSettlements.Add(new DebtSettlement
+            {
+                OrganizationId =organizationId,
+                SourceDebtId = newDebt.Id,
+                TargetedDebtId = oldDebt.Id,
+                HoursApplied= hoursApplied
+            });
+
+
+            if (newDebt.RemainingHours == 0){
+                newDebt.Status ="Settled";
+            }
+
+        }
 
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
@@ -188,11 +232,12 @@ var openShifts = await db.Shifts
             shiftId=shift.Id,
             shiftStatus = shift.Status,
             shiftAccepted = shift.AcceptedByUserId,
-            debtId= debt.Id,
-            Creditor = debt.CreditorUserId,
-            debitor = debt.DebitorUserId,
-            owed= debt.HoursOwed,
-            debtStatus = debt.Status
+            debtId= newDebt.Id,
+            Creditor = newDebt.CreditorUserId,
+            debitor = newDebt.DebitorUserId,
+            remainingHours = newDebt.RemainingHours,
+            owed= newDebt.HoursOwed,
+            debtStatus = newDebt.Status
 
         });
     });
