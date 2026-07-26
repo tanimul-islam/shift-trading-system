@@ -70,38 +70,48 @@ public static class ShiftEndpoints
             });
         });
 
-        shifts.MapGet("/", async (
-            Guid locationId,
-            ClaimsPrincipal principal,
-            ApplicationDbContext db
-        ) =>
-        {
-            var organizationIdValue = principal.FindFirst("organization_id")?.Value;
-            if(!Guid.TryParse(organizationIdValue, out var organizationId))
-            {
-                return Results.Unauthorized();
-            }
-            
-            var locationExists = await db.Locations.AnyAsync(location =>
-            location.Id == locationId &&
+    shifts.MapGet("/", async (
+    Guid? locationId,
+    ClaimsPrincipal principal,
+    ApplicationDbContext db) =>
+{
+    if (!principal.TryGetCurrentUser(out var organizationId, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    if (locationId.HasValue)
+    {
+        var locationBelongsToOrganization = await db.Locations.AnyAsync(location =>
+            location.Id == locationId.Value &&
             location.OrganizationId == organizationId);
 
-            if (!locationExists)
+        if (!locationBelongsToOrganization)
+        {
+            return Results.BadRequest(new
             {
-                 return Results.BadRequest(new
-                {
-                    message = "The selected location does not belong to your organization."
-                });
-            }
-var openShifts = await db.Shifts
+                message = "The selected location does not belong to your organization."
+            });
+        }
+    }
+
+    var query = db.Shifts
         .Where(shift =>
             shift.OrganizationId == organizationId &&
-            shift.LocationId == locationId &&
-            shift.Status == "Open")
+            shift.Status == "Open" &&
+            shift.PostedByUserId != userId);
+
+    if (locationId.HasValue)
+    {
+        query = query.Where(shift => shift.LocationId == locationId.Value);
+    }
+
+    var openShifts = await query
         .OrderBy(shift => shift.ScheduleStartUtc)
         .Select(shift => new
         {
             shift.Id,
+            shift.LocationId,
             shift.PostedByUserId,
             shift.ScheduleStartUtc,
             shift.ScheduleEndUtc,
@@ -110,10 +120,51 @@ var openShifts = await db.Shifts
         })
         .ToListAsync();
 
-        return Results.Ok(openShifts);
+    return Results.Ok(openShifts);
+});
 
 
-    });
+
+//get one shift by id
+shifts.MapGet("/{shiftId:guid}",async(
+    Guid shiftId,
+    ClaimsPrincipal principal,
+    ApplicationDbContext db
+) =>
+{
+    if(!principal.TryGetCurrentUser(out var organizationId, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var shift = await db.Shifts
+                    .Where(shift =>
+                    shift.Id == shiftId &&
+                    shift.OrganizationId == organizationId &&
+                    shift.Status == "open" &&
+                    shift.PostedByUserId != userId        
+                    ).Select(shift => new
+                    {
+                        shift.Id,
+                        shift.LocationId,
+                        shift.PostedByUserId,
+                        shift.CreatedAtUtc,
+                        shift.ScheduleStartUtc,
+                        shift.ScheduleEndUtc,
+                        shift.Status
+                    }).FirstOrDefaultAsync();
+
+                    if(shift is null)
+    {
+        return Results.NotFound(new
+        {
+            message ="The open shift was found are no longer avilable"
+        });
+    }
+
+    return Results.Ok(shift);
+});
+
 
     shifts.MapPost("/{shiftId:guid}/accept", async (
         Guid shiftId,
@@ -240,6 +291,60 @@ foreach (var oldDebt in debtsToRepay)
             debtStatus = newDebt.Status
 
         });
+    });
+
+
+
+    shifts.MapDelete("/{shiftId:guid}",async(
+        Guid shiftId,
+        ClaimsPrincipal principal,
+        ApplicationDbContext db
+    ) =>
+    {
+        if(!principal.TryGetCurrentUser(out var organizationId, out var userId)){
+            return Results.Unauthorized();
+        };
+        var shift = await db.Shifts.FirstOrDefaultAsync(
+            shift => shift.Id == shiftId &&
+            shift.OrganizationId == organizationId
+        );
+
+        if (shift is null)
+        {
+            return Results.NotFound(new
+            {
+                message =" No Shifts Found!"
+            });
+        }
+
+        if(shift.PostedByUserId != userId)
+        {
+            return Results.Forbid();
+        }
+
+        if(shift.Status != "open")
+        {
+            return Results.BadRequest(new
+            {
+                message ="Only an Open shift can be cancelled"
+            });
+        }
+
+        shift.Status = "Cancelled";
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok(new
+        {
+            message =" Shift Cancelled Successfully",
+            shift.Id,
+            shift.Status
+        });
+
+
+
+
+
     });
 
 
