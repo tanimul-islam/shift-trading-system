@@ -101,4 +101,6 @@ app.MapDebtEndpoints();
 app.MapAuthEndpoints();
 app.MapEmployeeEndpoints();
 app.MapShiftEndpoints();
+app.MapDashboardEndpoints();
+app.MapAdminEndpoints();
 app.Run();
