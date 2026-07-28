@@ -144,6 +144,97 @@ public static class AdminEndpoints
         });
 
 
+        app.MapGet("/employees/{employeeId}/summary", async (
+            string employeeId,
+            ClaimsPrincipal principal,
+            ApplicationDbContext db
+        ) =>
+        {
+            if(!principal.TryGetCurrentUser(out var organizationId, out _ )){
+                return Results.Unauthorized();
+        }
+
+        var organizationRole = principal.FindFirst("organization_role")?.Value;
+
+        if(!string.Equals(
+            organizationRole,"Owner",StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.Forbid();
+            }
+
+        var employee = await db.OrganizationMemberships
+                        .AsNoTracking()
+                        .Where(membership => 
+                        membership.OrganizationId == organizationId &&
+                        membership.userId == employeeId
+                        ).Select (membership => new
+                        {
+                            membership.userId,
+                            membership.Role
+                        }).FirstOrDefaultAsync();
+
+        if (employee is null)
+        {
+            return Results.NotFound(new
+            {
+                message = "Employee not found in this organization."
+            });
+        }
+
+        var postedShiftCount = await db.Shifts.AsNoTracking()
+                                .CountAsync(shift => shift.PostedByUserId == employeeId
+                                && shift.OrganizationId == organizationId );
+        var acceptedShiftsCount = await db.Shifts.AsNoTracking()
+                                  .CountAsync(shift => shift.AcceptedByUserId  == employeeId &&
+                                    shift.OrganizationId == organizationId &&
+                                    shift.Status =="Accepted");
+
+        var openShiftCount = await db.Shifts.AsNoTracking()
+                                  .CountAsync(shift => shift.PostedByUserId  == employeeId &&
+                                    shift.OrganizationId == organizationId &&
+                                    shift.Status =="Open");
+        
+         var activeDebts = await db.HoursDebts.AsNoTracking()
+                                .Where(debt => 
+                                    debt.OrganizationId == organizationId &&
+                                    debt.Status =="Active" &&
+                                    (debt.CreditorUserId == employeeId || debt.DebitorUserId == employeeId))
+                                .Select(debt => new
+                                {
+                                    debt.CreditorUserId,
+                                    debt.DebitorUserId,
+                                    debt.RemainingHours
+                                })
+                                .ToListAsync();
+                                
+         var hoursEmployeeOwes  = activeDebts
+                                .Where(debt => 
+                                    debt.DebitorUserId == employeeId
+                                   )
+                                .Sum( debt=> debt.RemainingHours);
+
+
+        var hoursOwedToEmployee  = activeDebts
+                                .Where(debt => 
+                                    debt.CreditorUserId == employeeId
+                                   )
+                                .Sum( debt=> debt.RemainingHours);
+
+
+        return Results.Ok( new
+        {
+            employee.userId,
+            employee.Role,
+            postedShiftCount,
+            acceptedShiftsCount,
+            openShiftCount,
+            hoursEmployeeOwes,
+            hoursOwedToEmployee,
+            activeDebtCount = activeDebts.Count
+        });          
+        });
+
+
         return app;
     }
 
