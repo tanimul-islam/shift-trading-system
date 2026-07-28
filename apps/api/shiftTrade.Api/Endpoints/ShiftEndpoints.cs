@@ -73,7 +73,9 @@ public static class ShiftEndpoints
     shifts.MapGet("/", async (
     Guid? locationId,
     ClaimsPrincipal principal,
-    ApplicationDbContext db) =>
+    ApplicationDbContext db,
+    int page =1,
+    int pageSize =20) =>
 {
     if (!principal.TryGetCurrentUser(out var organizationId, out var userId))
     {
@@ -95,6 +97,9 @@ public static class ShiftEndpoints
         }
     }
 
+     page = Math.Max(page, 1);
+    pageSize = Math.Clamp(pageSize, 1, 100);
+
     var query = db.Shifts
         .Where(shift =>
             shift.OrganizationId == organizationId &&
@@ -106,8 +111,12 @@ public static class ShiftEndpoints
         query = query.Where(shift => shift.LocationId == locationId.Value);
     }
 
+    var totalCount = await query.CountAsync();
+
     var openShifts = await query
-        .OrderBy(shift => shift.ScheduleStartUtc)
+        .OrderBy(shift => shift.ScheduleStartUtc).
+        Skip((page-1)*pageSize)
+        .Take(pageSize)
         .Select(shift => new
         {
             shift.Id,
@@ -120,7 +129,15 @@ public static class ShiftEndpoints
         })
         .ToListAsync();
 
-    return Results.Ok(openShifts);
+     return Results.Ok(new
+        {
+            page,
+            pageSize,
+            totalCount,
+            totalPages = (int)Math.Ceiling(
+                totalCount / (double)pageSize),
+            items = openShifts
+        });
 });
 
 

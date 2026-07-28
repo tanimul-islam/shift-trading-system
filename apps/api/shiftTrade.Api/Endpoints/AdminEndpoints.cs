@@ -2,60 +2,63 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using shiftTrade.Api.Data;
 using shiftTrade.Api.Extensions;
-namespace shiftTrade.Api.Endpoints;
 
+namespace shiftTrade.Api.Endpoints;
 
 public static class AdminEndpoints
 {
     public static IEndpointRouteBuilder MapAdminEndpoints(
-        this IEndpointRouteBuilder app
-    )
+        this IEndpointRouteBuilder app)
     {
-        var admin = app.MapGroup("/api/admin").WithTags("Admin").RequireAuthorization();
+        var admin = app.MapGroup("/api/admin")
+            .WithTags("Admin")
+            .RequireAuthorization();
 
-        app.MapGet("/shifts", async(
+        admin.MapGet("/shifts", async (
             ClaimsPrincipal principal,
             ApplicationDbContext db,
             string? status,
             Guid? locationId,
             int page = 1,
-            int pageSize = 20
-        ) =>
+            int pageSize = 20) =>
         {
-            if(!principal.TryGetCurrentUser(out var organizationId,out var userId)){
+            if (!principal.TryGetCurrentUser(
+                    out var organizationId,
+                    out _))
+            {
                 return Results.Unauthorized();
-        }
+            }
 
-        var organizationRole = principal.FindFirst("organization_role")?.Value;
+            var organizationRole =
+                principal.FindFirst("organization_role")?.Value;
 
-        if(!string.Equals(
-            organizationRole,"Owner",StringComparison.OrdinalIgnoreCase
-        ))
+            if (!string.Equals(
+                    organizationRole,
+                    "Owner",
+                    StringComparison.OrdinalIgnoreCase))
             {
                 return Results.Forbid();
             }
 
-        page = Math.Max(page,1);
-        pageSize = Math.Clamp(pageSize,1 ,100);
-        
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
 
-        if (locationId.HasValue)
+            if (locationId.HasValue)
             {
-                var locationExists = await db.Locations.AnyAsync(location =>
-                  location.Id == locationId.Value &&
-                    location.OrganizationId == organizationId
-                );
+                var locationExists = await db.Locations
+                    .AnyAsync(location =>
+                        location.Id == locationId.Value &&
+                        location.OrganizationId == organizationId);
 
                 if (!locationExists)
                 {
                     return Results.BadRequest(new
                     {
-                        message = "The selected location does not belong to your organization."
+                        message =
+                            "The selected location does not belong to your organization."
                     });
                 }
             }
-
-            
 
             var query = db.Shifts
                 .AsNoTracking()
@@ -64,25 +67,25 @@ public static class AdminEndpoints
 
             if (!string.IsNullOrWhiteSpace(status))
             {
-                query = query.Where(shift => 
-                shift.Status.ToLower() == status.ToLower());
+                query = query.Where(shift =>
+                    shift.Status.ToLower() == status.ToLower());
             }
 
             if (locationId.HasValue)
             {
-                query = query.Where(shift=>
-                shift.LocationId ==locationId.Value);
+                query = query.Where(shift =>
+                    shift.LocationId == locationId.Value);
             }
 
             var totalCount = await query.CountAsync();
 
             var shiftList = await query
-            .Skip((page-1)*pageSize)
-            .Take(pageSize)
-            .OrderByDescending(shift => shift.CreatedAtUtc)
-            .Select (shift  => new
-            {
-                shift.Id,
+                .OrderByDescending(shift => shift.CreatedAtUtc)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(shift => new
+                {
+                    shift.Id,
                     shift.LocationId,
                     shift.PostedByUserId,
                     shift.AcceptedByUserId,
@@ -91,44 +94,48 @@ public static class AdminEndpoints
                     shift.Status,
                     shift.CreatedAtUtc,
                     shift.AcceptedAtUtc
-            }).ToListAsync();
+                })
+                .ToListAsync();
 
             return Results.Ok(new
             {
                 page,
                 pageSize,
                 totalCount,
-                totalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                totalPages = (int)Math.Ceiling(
+                    totalCount / (double)pageSize),
                 items = shiftList
             });
-
         });
 
-
-      app.MapGet("/debts", async(
+        admin.MapGet("/debts", async (
             ClaimsPrincipal principal,
             ApplicationDbContext db,
             string? status,
-            Guid? locationId,
+            string? userId,
             int page = 1,
-            int pageSize = 20
-
-        ) =>
+            int pageSize = 20) =>
         {
-            if(!principal.TryGetCurrentUser(out var organizationId,out var userId)){
+            if (!principal.TryGetCurrentUser(
+                    out var organizationId,
+                    out _))
+            {
                 return Results.Unauthorized();
-        }
+            }
 
-        var organizationRole = principal.FindFirst("organization_role")?.Value;
+            var organizationRole =
+                principal.FindFirst("organization_role")?.Value;
 
-        if(!string.Equals(
-            organizationRole,"Owner",StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(
+                    organizationRole,
+                    "Owner",
+                    StringComparison.OrdinalIgnoreCase))
             {
                 return Results.Forbid();
             }
 
-     page = Math.Max(page,1);
-     pageSize = Math.Clamp(page,1,100);
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
 
             var query = db.HoursDebts
                 .AsNoTracking()
@@ -137,141 +144,154 @@ public static class AdminEndpoints
 
             if (!string.IsNullOrWhiteSpace(status))
             {
-                query = query.Where(debt => 
-                debt.Status.ToLower() == status.ToLower());
+                query = query.Where(debt =>
+                    debt.Status.ToLower() == status.ToLower());
             }
 
-           if (!string.IsNullOrWhiteSpace(userId))
-    {
-        query = query.Where(debt =>
-            debt.CreditorUserId == userId ||
-            debt.DebitorUserId == userId);
-    }
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                query = query.Where(debt =>
+                    debt.CreditorUserId == userId ||
+                    debt.DebitorUserId == userId);
+            }
 
-      var totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync();
 
             var debtList = await query
-            .Skip((page-1)*pageSize)
-            .Take(pageSize)
-            .OrderByDescending(debt => debt.CreateAtUtc)
-            .Select (debt  => new
-            {
+                .OrderByDescending(debt => debt.CreateAtUtc)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(debt => new
+                {
                     debt.Id,
                     debt.ShiftId,
                     debt.CreditorUserId,
                     debt.DebitorUserId,
                     debt.HoursOwed,
                     debt.RemainingHours,
-                    repaidHours = debt.HoursOwed - debt.RemainingHours,
+                    repaidHours =
+                        debt.HoursOwed - debt.RemainingHours,
                     debt.Status,
                     debt.CreateAtUtc
-            }).ToListAsync();
+                })
+                .ToListAsync();
 
             return Results.Ok(new
             {
                 page,
                 pageSize,
                 totalCount,
-                totalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                totalPages = (int)Math.Ceiling(
+                    totalCount / (double)pageSize),
                 items = debtList
             });
-
         });
 
-
-        app.MapGet("/employees/{employeeId}/summary", async (
+        admin.MapGet("/employees/{employeeId}/summary", async (
             string employeeId,
             ClaimsPrincipal principal,
-            ApplicationDbContext db
-        ) =>
+            ApplicationDbContext db) =>
         {
-            if(!principal.TryGetCurrentUser(out var organizationId, out _ )){
+            if (!principal.TryGetCurrentUser(
+                    out var organizationId,
+                    out _))
+            {
                 return Results.Unauthorized();
-        }
+            }
 
-        var organizationRole = principal.FindFirst("organization_role")?.Value;
+            var organizationRole =
+                principal.FindFirst("organization_role")?.Value;
 
-        if(!string.Equals(
-            organizationRole,"Owner",StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(
+                    organizationRole,
+                    "Owner",
+                    StringComparison.OrdinalIgnoreCase))
             {
                 return Results.Forbid();
             }
 
-        var employee = await db.OrganizationMemberships
-                        .AsNoTracking()
-                        .Where(membership => 
-                        membership.OrganizationId == organizationId &&
-                        membership.userId == employeeId
-                        ).Select (membership => new
-                        {
-                            membership.userId,
-                            membership.Role
-                        }).FirstOrDefaultAsync();
+            var employee = await db.OrganizationMemberships
+                .AsNoTracking()
+                .Where(membership =>
+                    membership.OrganizationId == organizationId &&
+                    membership.userId == employeeId)
+                .Select(membership => new
+                {
+                    membership.userId,
+                    membership.Role
+                })
+                .FirstOrDefaultAsync();
 
-        if (employee is null)
-        {
-            return Results.NotFound(new
+            if (employee is null)
             {
-                message = "Employee not found in this organization."
+                return Results.NotFound(new
+                {
+                    message =
+                        "Employee not found in this organization."
+                });
+            }
+
+            var postedShiftCount = await db.Shifts
+                .AsNoTracking()
+                .CountAsync(shift =>
+                    shift.OrganizationId == organizationId &&
+                    shift.PostedByUserId == employeeId);
+
+            var acceptedShiftsCount = await db.Shifts
+                .AsNoTracking()
+                .CountAsync(shift =>
+                    shift.OrganizationId == organizationId &&
+                    shift.AcceptedByUserId == employeeId &&
+                    shift.Status == "Accepted");
+
+            var openShiftCount = await db.Shifts
+                .AsNoTracking()
+                .CountAsync(shift =>
+                    shift.OrganizationId == organizationId &&
+                    shift.PostedByUserId == employeeId &&
+                    shift.Status == "Open");
+
+            var activeDebts = await db.HoursDebts
+                .AsNoTracking()
+                .Where(debt =>
+                    debt.OrganizationId == organizationId &&
+                    debt.Status == "Active" &&
+                    debt.RemainingHours > 0 &&
+                    (debt.CreditorUserId == employeeId ||
+                     debt.DebitorUserId == employeeId))
+                .Select(debt => new
+                {
+                    debt.CreditorUserId,
+                    debt.DebitorUserId,
+                    debt.RemainingHours
+                })
+                .ToListAsync();
+
+            var hoursEmployeeOwes = activeDebts
+                .Where(debt =>
+                    debt.DebitorUserId == employeeId)
+                .Sum(debt =>
+                    debt.RemainingHours);
+
+            var hoursOwedToEmployee = activeDebts
+                .Where(debt =>
+                    debt.CreditorUserId == employeeId)
+                .Sum(debt =>
+                    debt.RemainingHours);
+
+            return Results.Ok(new
+            {
+                employee.userId,
+                employee.Role,
+                postedShiftCount,
+                acceptedShiftsCount,
+                openShiftCount,
+                hoursEmployeeOwes,
+                hoursOwedToEmployee,
+                activeDebtCount = activeDebts.Count
             });
-        }
-
-        var postedShiftCount = await db.Shifts.AsNoTracking()
-                                .CountAsync(shift => shift.PostedByUserId == employeeId
-                                && shift.OrganizationId == organizationId );
-        var acceptedShiftsCount = await db.Shifts.AsNoTracking()
-                                  .CountAsync(shift => shift.AcceptedByUserId  == employeeId &&
-                                    shift.OrganizationId == organizationId &&
-                                    shift.Status =="Accepted");
-
-        var openShiftCount = await db.Shifts.AsNoTracking()
-                                  .CountAsync(shift => shift.PostedByUserId  == employeeId &&
-                                    shift.OrganizationId == organizationId &&
-                                    shift.Status =="Open");
-        
-         var activeDebts = await db.HoursDebts.AsNoTracking()
-                                .Where(debt => 
-                                    debt.OrganizationId == organizationId &&
-                                    debt.Status =="Active" &&
-                                    (debt.CreditorUserId == employeeId || debt.DebitorUserId == employeeId))
-                                .Select(debt => new
-                                {
-                                    debt.CreditorUserId,
-                                    debt.DebitorUserId,
-                                    debt.RemainingHours
-                                })
-                                .ToListAsync();
-                                
-         var hoursEmployeeOwes  = activeDebts
-                                .Where(debt => 
-                                    debt.DebitorUserId == employeeId
-                                   )
-                                .Sum( debt=> debt.RemainingHours);
-
-
-        var hoursOwedToEmployee  = activeDebts
-                                .Where(debt => 
-                                    debt.CreditorUserId == employeeId
-                                   )
-                                .Sum( debt=> debt.RemainingHours);
-
-
-        return Results.Ok( new
-        {
-            employee.userId,
-            employee.Role,
-            postedShiftCount,
-            acceptedShiftsCount,
-            openShiftCount,
-            hoursEmployeeOwes,
-            hoursOwedToEmployee,
-            activeDebtCount = activeDebts.Count
-        });          
         });
-
 
         return app;
     }
-
-     
 }

@@ -56,7 +56,7 @@ public static class DebtEndpoints
             });
         });
 
-        app.MapGet("/history", async (ClaimsPrincipal principal, ApplicationDbContext db) =>
+        debts.MapGet("/history", async (ClaimsPrincipal principal, ApplicationDbContext db) =>
         {
             if (!principal.TryGetCurrentUser(out var organizationId, out var userId))
             {
@@ -86,7 +86,7 @@ public static class DebtEndpoints
             return Results.Ok(debtHistory);
         });
 
-        app.MapGet("/settlements", async (ClaimsPrincipal principal, ApplicationDbContext db) =>
+        debts.MapGet("/settlements", async (ClaimsPrincipal principal, ApplicationDbContext db) =>
         {
             if (!principal.TryGetCurrentUser(out var organizationId, out var userId))
             {

@@ -86,7 +86,9 @@ public static class EmployeeEndpoints
     employees.MapGet("/", async (
         ClaimsPrincipal principal,
         UserManager<ApplicationUser> userManager,
-        ApplicationDbContext db) =>
+        ApplicationDbContext db,
+        int page = 1,
+        int pageSize = 20) =>
     {
         var organizationIdValue = principal.FindFirst("organization_id")?.Value;
         var organizationRole = principal.FindFirst("organization_role")?.Value;
@@ -104,8 +106,17 @@ public static class EmployeeEndpoints
             return Results.Unauthorized();
         }
 
-        var employeeList = await db.OrganizationMemberships
-            .Where(membership => membership.OrganizationId == organizationId)
+         page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+
+        var query = db.OrganizationMemberships
+                .Where(membership =>
+                    membership.OrganizationId == organizationId);
+
+        var totalCount = await query.CountAsync();
+
+        var employeeList = query
             .Join(
                 userManager.Users,
                 membership => membership.userId,
@@ -118,9 +129,19 @@ public static class EmployeeEndpoints
                     membership.Role
                 })
             .OrderBy(employee => employee.displayName)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
-        return Results.Ok(employeeList);
+        return Results.Ok(new
+        {
+            page,
+            pageSize,
+            totalCount,
+            totalPages = (int)Math.Ceiling(
+                totalCount / (double)pageSize),
+            items = employeeList
+        });
         });
     return app;
     }
