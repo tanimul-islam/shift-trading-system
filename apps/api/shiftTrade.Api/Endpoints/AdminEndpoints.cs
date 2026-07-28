@@ -2,6 +2,9 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using shiftTrade.Api.Data;
 using shiftTrade.Api.Extensions;
+using shiftTrade.Api.Contracts.Common;
+using shiftTrade.Api.Contracts.Admin;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace shiftTrade.Api.Endpoints;
 
@@ -83,29 +86,32 @@ public static class AdminEndpoints
                 .OrderByDescending(shift => shift.CreatedAtUtc)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(shift => new
+                .Select(shift => new AdminShiftResponse
                 {
-                    shift.Id,
-                    shift.LocationId,
-                    shift.PostedByUserId,
-                    shift.AcceptedByUserId,
-                    shift.ScheduleStartUtc,
-                    shift.ScheduleEndUtc,
-                    shift.Status,
-                    shift.CreatedAtUtc,
-                    shift.AcceptedAtUtc
+                   Id =  shift.Id,
+                   LocationId = shift.LocationId,
+                  PostedByUserId =  shift.PostedByUserId,
+                  AcceptedByUserId =  shift.AcceptedByUserId,
+                  ScheduleStartUtc =  shift.ScheduleStartUtc,
+                    ScheduleEndUtc = shift.ScheduleEndUtc,
+                    Status = shift.Status,
+                    CreatedAtUtc = shift.CreatedAtUtc,
+                    AcceptedAtUtc = shift.AcceptedAtUtc
                 })
                 .ToListAsync();
 
-            return Results.Ok(new
+            var response = new PageResponse<AdminShiftResponse>
             {
-                page,
-                pageSize,
-                totalCount,
-                totalPages = (int)Math.Ceiling(
-                    totalCount / (double)pageSize),
-                items = shiftList
-            });
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(
+                    totalCount / (double)pageSize
+                ),
+                Items = shiftList
+            };
+
+            return Results.Ok(response);
         });
 
         admin.MapGet("/debts", async (
@@ -161,30 +167,34 @@ public static class AdminEndpoints
                 .OrderByDescending(debt => debt.CreateAtUtc)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(debt => new
+                .Select(debt => new AdminDebtResponse
                 {
-                    debt.Id,
-                    debt.ShiftId,
-                    debt.CreditorUserId,
-                    debt.DebitorUserId,
-                    debt.HoursOwed,
-                    debt.RemainingHours,
-                    repaidHours =
-                        debt.HoursOwed - debt.RemainingHours,
-                    debt.Status,
-                    debt.CreateAtUtc
+                   Id = debt.Id,
+                   ShiftId = debt.ShiftId,
+                    CreditorUserId = debt.CreditorUserId,
+                    DebitorUserId = debt.DebitorUserId,
+                    HoursOwed = debt.HoursOwed,
+                    RemainingHours = debt.RemainingHours,
+                    RepaidHours = debt.HoursOwed - debt.RemainingHours,
+                    Status = debt.Status,
+                    CreateAtUtc = debt.CreateAtUtc
                 })
                 .ToListAsync();
 
-            return Results.Ok(new
-            {
-                page,
-                pageSize,
-                totalCount,
-                totalPages = (int)Math.Ceiling(
-                    totalCount / (double)pageSize),
-                items = debtList
-            });
+                var response = new PageResponse<AdminDebtResponse>
+                {
+                    Page =page,
+                    PageSize =pageSize,
+                    TotalCount = totalCount,
+                    TotalPages = (int)Math.Ceiling(
+                        totalCount /  (double)pageSize
+                    ),
+                    Items = debtList
+                };
+
+
+            return Results.Ok(response
+           );
         });
 
         admin.MapGet("/employees/{employeeId}/summary", async (
