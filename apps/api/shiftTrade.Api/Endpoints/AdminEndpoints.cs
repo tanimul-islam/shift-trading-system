@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.EntityFrameworkCore;
 using shiftTrade.Api.Data;
 using shiftTrade.Api.Extensions;
@@ -15,10 +14,12 @@ public static class AdminEndpoints
         var admin = app.MapGroup("/api/admin").WithTags("Admin").RequireAuthorization();
 
         app.MapGet("/shifts", async(
+            ClaimsPrincipal principal,
+            ApplicationDbContext db,
             string? status,
             Guid? locationId,
-            ClaimsPrincipal principal,
-            ApplicationDbContext db
+            int page = 1,
+            int pageSize = 20
         ) =>
         {
             if(!principal.TryGetCurrentUser(out var organizationId,out var userId)){
@@ -33,7 +34,12 @@ public static class AdminEndpoints
             {
                 return Results.Forbid();
             }
-            if (locationId.HasValue)
+
+        page = Math.Max(page,1);
+        pageSize = Math.Clamp(pageSize,1 ,100);
+        
+
+        if (locationId.HasValue)
             {
                 var locationExists = await db.Locations.AnyAsync(location =>
                   location.Id == locationId.Value &&
@@ -48,6 +54,8 @@ public static class AdminEndpoints
                     });
                 }
             }
+
+            
 
             var query = db.Shifts
                 .AsNoTracking()
@@ -66,7 +74,11 @@ public static class AdminEndpoints
                 shift.LocationId ==locationId.Value);
             }
 
+            var totalCount = await query.CountAsync();
+
             var shiftList = await query
+            .Skip((page-1)*pageSize)
+            .Take(pageSize)
             .OrderByDescending(shift => shift.CreatedAtUtc)
             .Select (shift  => new
             {
@@ -81,16 +93,26 @@ public static class AdminEndpoints
                     shift.AcceptedAtUtc
             }).ToListAsync();
 
-            return Results.Ok(shiftList);
+            return Results.Ok(new
+            {
+                page,
+                pageSize,
+                totalCount,
+                totalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                items = shiftList
+            });
 
         });
 
 
       app.MapGet("/debts", async(
+            ClaimsPrincipal principal,
+            ApplicationDbContext db,
             string? status,
             Guid? locationId,
-            ClaimsPrincipal principal,
-            ApplicationDbContext db
+            int page = 1,
+            int pageSize = 20
+
         ) =>
         {
             if(!principal.TryGetCurrentUser(out var organizationId,out var userId)){
@@ -105,6 +127,8 @@ public static class AdminEndpoints
                 return Results.Forbid();
             }
 
+     page = Math.Max(page,1);
+     pageSize = Math.Clamp(page,1,100);
 
             var query = db.HoursDebts
                 .AsNoTracking()
@@ -124,7 +148,11 @@ public static class AdminEndpoints
             debt.DebitorUserId == userId);
     }
 
+      var totalCount = await query.CountAsync();
+
             var debtList = await query
+            .Skip((page-1)*pageSize)
+            .Take(pageSize)
             .OrderByDescending(debt => debt.CreateAtUtc)
             .Select (debt  => new
             {
@@ -139,7 +167,14 @@ public static class AdminEndpoints
                     debt.CreateAtUtc
             }).ToListAsync();
 
-            return Results.Ok(debtList);
+            return Results.Ok(new
+            {
+                page,
+                pageSize,
+                totalCount,
+                totalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                items = debtList
+            });
 
         });
 
