@@ -1,119 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
-/*
-  ---break---
-*/
+
 @custom-variant dark (&:is(.dark *));
 
-/*
-  Shift Trading System design tokens
-
-  Primary blue:   #0050F6
-  Secondary blue: #58A3FF
-  Success green:  #38E66A
-  Dark surface:   #141414
-  White:          #FFFFFF
-*/
-
-:root {
-  --radius: 0.625rem;
-
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-
-  --success: #38e66a;
-  --success-foreground: #141414;
-
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: #ffffff;
-
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-
-  --success: #38e66a;
-  --success-foreground: #07180c;
-
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: #ffffff;
-
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-}
-
 @theme inline {
-  --font-sans: var(--font-sans);
-
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
@@ -135,15 +25,17 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
 
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
 
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -158,81 +50,158 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 10px);
-  --font-heading: var(--font-sans);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-* {
-  border-color: var(--border);
-  box-sizing: border-box;
+:root {
+  --radius: 0.75rem;
+
+  /* Main page */
+  --background: #f4fffc;
+  --foreground: #1f4b2c;
+
+  /* Cards and overlays */
+  --card: #ffffff;
+  --card-foreground: #1f4b2c;
+
+  --popover: #ffffff;
+  --popover-foreground: #1f4b2c;
+
+  /* Main actions */
+  --primary: #1f4b2c;
+  --primary-foreground: #f4fffc;
+
+  /* Secondary actions */
+  --secondary: #4d7111;
+  --secondary-foreground: #ffffff;
+
+  /* Subtle backgrounds */
+  --muted: #f4fffc;
+  --muted-foreground: #91eaaf;
+
+  /* Highlights and selected states */
+  --accent: #c3e956;
+  --accent-foreground: #f4fffc;
+
+  /* Destructive actions */
+  --destructive: #dc2626;
+
+  /* Form and focus colors */
+  --border: #91eaaf;
+  --input: #91eaaf;
+  --ring: #c3e956;
+
+  /* Charts */
+  --chart-1: #081426;
+  --chart-2: #142a44;
+  --chart-3: #4a74a7;
+  --chart-4: #86a8ce;
+  --chart-5: #dceaf7;
+
+  /* Sidebar */
+  --sidebar: #081426;
+  --sidebar-foreground: #dceaf7;
+  --sidebar-primary: #4a74a7;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #142a44;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #294866;
+  --sidebar-ring: #4a74a7;
 }
 
-html {
-  min-height: 100%;
-  scroll-behavior: smooth;
+.dark {
+  /* Main page */
+  --background: #081426;
+  --foreground: #dceaf7;
+
+  /* Cards and overlays */
+  --card: #0e2036;
+  --card-foreground: #dceaf7;
+
+  --popover: #0e2036;
+  --popover-foreground: #dceaf7;
+
+  /* Main actions */
+  --primary: #4a74a7;
+  --primary-foreground: #ffffff;
+
+  /* Secondary actions */
+  --secondary: #142a44;
+  --secondary-foreground: #dceaf7;
+
+  /* Subtle backgrounds */
+  --muted: #142a44;
+  --muted-foreground: #a9c2dc;
+
+  /* Highlights and selected states */
+  --accent: #4a74a7;
+  --accent-foreground: #ffffff;
+
+  /* Destructive actions */
+  --destructive: #ef4444;
+
+  /* Form and focus colors */
+  --border: #28435f;
+  --input: #28435f;
+  --ring: #7da1ca;
+
+  /* Charts */
+  --chart-1: #dceaf7;
+  --chart-2: #86a8ce;
+  --chart-3: #4a74a7;
+  --chart-4: #31577d;
+  --chart-5: #142a44;
+
+  /* Sidebar */
+  --sidebar: #06101f;
+  --sidebar-foreground: #dceaf7;
+  --sidebar-primary: #4a74a7;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #142a44;
+  --sidebar-accent-foreground: #dceaf7;
+  --sidebar-border: #28435f;
+  --sidebar-ring: #7da1ca;
 }
 
-body {
-  min-height: 100%;
-  margin: 0;
-  font-family: var(--font-violet-sans), Arial, Helvetica, sans-serif;
-}
-
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-::selection {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-
-/*
-  Optional background for marketing and authentication pages.
-
-  Usage:
-  className="brand-gradient"
-*/
-.brand-gradient {
+.green-gradient {
   background:
-    radial-gradient(circle at 20% 100%, rgb(0 80 246 / 80%), transparent 42%),
-    radial-gradient(circle at 85% 100%, rgb(88 163 255 / 65%), transparent 38%),
-    #141414;
+    radial-gradient(
+      circle at 10% 58%,
+      #ccbf0c 0%,
+      #c2bf0c 10%,
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at 92% 76%,
+      #0e6b34 0%,
+      #4e9135 18%,
+      transparent 40%
+    ),
+    radial-gradient(circle at 4% 4%, #006231 0%, #187738 18%, transparent 72%),
+    radial-gradient(
+      circle at 10% 100%,
+      #019642 0%,
+      #20a33c 18%,
+      transparent 42%
+    ),
+    linear-gradient(135deg, #27853a 0%, #8cbe21 35%, #b3c522 58%, #6d9e32 100%);
 }
 
-/*
-  Soft blue glow used behind cards or important sections.
-*/
-.blue-glow {
-  box-shadow:
-    0 0 60px rgb(0 80 246 / 18%),
-    0 20px 60px rgb(0 0 0 / 15%);
-}
-/*
-  ---break---
-*/
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    min-height: 100vh;
   }
-  html {
-    @apply font-sans;
+
+  button,
+  a {
+    @apply transition-colors;
   }
 }
